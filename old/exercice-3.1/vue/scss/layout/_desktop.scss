@@ -1,0 +1,125 @@
+/*----------------------------------------*\
+    Desktop styles
+\*----------------------------------------*/
+
+
+
+@media screen and (min-width: $break-large) {
+
+    /*----------------------------------------*\
+        Main Navigation
+    \*----------------------------------------*/
+
+    .header-nav {
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    .header-nav-btn { display: none; }
+    .header-nav-content.is-open,
+    .header-nav-content.is-close { height: auto; }
+
+    .header-nav-content li { 
+        display: inline; 
+        border-bottom: 0;
+
+        &::before {
+            content: "\2022";
+            color: $pink;
+            margin: 0 30px;
+            font-size: 22px;
+        }
+
+        &:first-child::before { display: none; }
+
+        & a {
+            font-weight: 700;
+            line-height: 3rem;
+            white-space: nowrap;
+        }
+    }
+
+
+
+    /*----------------------------------------*\
+        Main layout
+    \*----------------------------------------*/
+
+    .main-content { display: flex; }
+    .articles { 
+        flex-basis: 70%; 
+        padding: 0 30px 0 0;
+    }
+    aside { 
+        flex-basis: 30%; 
+        padding: 0 30px;
+    }
+
+    aside { padding-bottom: 0; }
+
+    .container,
+    footer {
+        margin: 0 20px;
+    }
+
+
+
+    /*----------------------------------------*\
+        Articles
+    \*----------------------------------------*/
+
+    .article-texts {
+        margin: -65px 0 0 20%;
+        padding: 30px 0 0 40px;
+        background-color: white;
+        z-index: 1;
+        position: relative;
+
+        & h2 { margin-top: 0; }
+    }
+
+    .article-informations {
+        position: absolute;
+        left: -160px;
+        width: 160px;
+        text-align: right;
+
+        & time {
+            width: 100%;
+            display: block;
+        }
+    }
+
+
+
+    /*----------------------------------------*\
+        Modules
+    \*----------------------------------------*/
+
+    .youtube iframe {
+        min-height: 210px;
+    }
+
+
+
+    /*----------------------------------------*\
+        Footer
+    \*----------------------------------------*/
+
+    footer {
+        display: flex;
+
+        & section {
+            flex-basis: calc(100% / 3);
+
+            &:last-child {
+                padding: 30px 0 0 0;
+
+                & p { padding: 25px 40px 0 40px; }
+            }
+            
+            
+        }
+    }
+    
+}

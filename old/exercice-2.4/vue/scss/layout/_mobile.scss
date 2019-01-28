@@ -1,0 +1,156 @@
+/*----------------------------------------*\
+    Mobile styles
+\*----------------------------------------*/
+
+
+
+/*----------------------------------------*\
+    Main components
+\*----------------------------------------*/
+
+.article { margin-top: 100px; }
+.article-title { text-transform: uppercase; }
+
+.article-informations, 
+.article-informations a { 
+    font-family: 'Merriweather', serif;
+    color: $lightGrey 
+}
+
+.article-informations-comments { margin-left: 15px; }
+.article-texts { margin: 0 40px; }
+
+
+
+/*----------------------------------------*\
+    Header
+\*----------------------------------------*/
+
+.header-logo {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    margin: 0px auto 50px auto;
+    padding-top: 50px;
+}
+
+
+
+/*----------------------------------------*\
+    Main Navigation
+\*----------------------------------------*/
+
+.header-nav {
+    padding: 30px 0;
+    background-color: $darkGrey;
+}
+
+.header-nav-btn {
+    display: block;
+    border: 0;
+    margin: 0 auto;
+    background: none;
+    color: white;
+    text-transform: uppercase;
+
+    &:focus { outline: none; }
+}
+
+.header-nav-content {
+    max-height: fit-content;
+    margin: 0;
+    padding: 0 40px;
+    overflow: hidden;
+    transition: height .25s ease-out;
+
+    @include nav-list;
+
+    & a {
+        color: white;
+        text-decoration: none;
+        text-transform: uppercase;
+    }
+}
+
+
+
+/*----------------------------------------*\
+    Modules
+\*----------------------------------------*/
+
+/*\
+ | Buttons
+\*/
+
+.btn,
+.btn:visited {
+    display: block;
+    width: fit-content;
+    margin: 50px auto;
+    padding: 15px;
+    border-radius: 3px;
+    background-color: $darkGrey;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+}
+
+/*\
+ | Youtube Integration
+\*/
+
+.youtube iframe {
+    width: 100%;
+    min-height: 450px;
+}
+
+/*\
+ | Social networks
+\*/
+
+.social-links {
+    text-align: center;
+
+    & a { margin: 0 2px }
+}
+
+/*\
+ | Blogger Network
+\*/
+
+.blogger-network h3:before,
+.blogger-network h3:after {
+    display: none;
+}
+
+/*\
+ | Copyrights
+\*/
+
+.copyright { text-align: center; }
+
+
+
+/*----------------------------------------*\
+    Footer
+\*----------------------------------------*/
+
+/*\
+ | News
+ | Categories
+\*/
+
+.news-list-container,
+.categories-list-container { @include nav-list; }
+
+
+
+/*----------------------------------------*\
+    JS States
+\*----------------------------------------*/
+
+.header-nav-content {
+
+    &.is-close { height: 0; }
+    &.is-open { height: 1000px; }
+}

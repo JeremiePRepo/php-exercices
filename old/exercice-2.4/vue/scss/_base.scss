@@ -1,0 +1,132 @@
+/*----------------------------------------*\
+    Base
+\*----------------------------------------*/
+
+
+
+/*\
+ | Breakpoints
+\*/
+
+$break-large: 1072px;
+
+
+
+/*\
+ | Colors
+\*/
+
+$darkGrey: #333;
+$lightGrey: #aaa;
+$lightBackground: #fafafa;
+$neutralGrey: #eee;
+$fontColor: #404040;
+$titleColor: #4f4f4f;
+$pink: #ffa4ad;
+
+
+
+/*\
+ | Mixins
+\*/
+
+@mixin nav-list {
+    padding: 0 40px;
+
+    & li {
+        padding: 30px 0;
+        border-bottom: 2px solid grey;
+        list-style: none;
+    }
+
+    & li:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+}
+
+
+
+/*\
+ | Fonts
+\*/
+
+body { 
+    font-family: 'Source Sans Pro', sans-serif; 
+    color: $fontColor;
+}
+
+p, 
+a,
+a:visited {
+    font-style: normal;
+    font-weight: 300;
+    line-height: 1.5rem;
+    text-decoration: none;
+    color: $fontColor;
+}
+
+h2 { 
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 3px;
+    color: $titleColor;
+}
+
+h3 {
+    text-transform: uppercase;
+    margin: 30px 0;
+    text-align: center;
+    letter-spacing: 2px;
+
+    &::before, 
+    &::after {
+        content: ' - '
+    }
+}
+
+
+
+/*\
+ | Base Elements
+\*/
+
+body {
+    background-image: url("../img/pics/background.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.container {
+    margin: 0 20px;
+    background-color: white;
+}
+
+figure { margin: 0; }
+
+img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+iframe {
+    border: 0;
+}
+
+aside { padding-bottom: 50px; }
+
+section { 
+    margin: 50px 0;    
+    padding-top: 30px; 
+}
+
+address { text-align: center; }
+
+footer {
+    background-color: $lightBackground;
+    border-top: 2px solid $neutralGrey;
+    margin: 0 20px;
+
+    & section:last-child { padding: 0 35px 15px; }
+}
