@@ -145,4 +145,50 @@ class DataBase
             return 4;           // DB_PREPARATION_ERROR_MESSAGE
         }
     }
+
+    /*-------------------------------------*/
+    
+    /*
+     * Fonction de création d'un utilisateur dans la base
+     * 
+     * En cas de tentative de création d'un login déjà existant
+     *  - Lance une CreationUtilisateurException
+     * Redirige vers une page d'erreur en cas de problème d'accès à la base
+     */
+    public function creationUtilisateur(string $login, string $motDePasse)
+    {
+        try {
+            $requete = $this->base->prepare("INSERT INTO " . self::TABLE_UTILISATEUR . "(" . 
+                                            self::CHAMPS_LOGIN . ", " . self::CHAMPS_MOT_DE_PASSE . 
+                                            ") VALUES (:login, :mdp)");
+        }
+        catch (PDOException $erreur) {
+            // Traitement d'erreur minimaliste
+            // Redirection vers une page d'erreur
+            header("Location: erreur.html");
+            exit();
+        }
+        if (!$requete->bindValue(":login",$login, PDO::PARAM_STR) ||
+            !$requete->bindValue(":mdp",password_hash($motDePasse, PASSWORD_DEFAULT), PDO::PARAM_STR)) {
+            // Traitement d'erreur minimaliste
+            // Redirection vers une page d'erreur
+            header("Location: erreur.html");
+            exit();
+        }
+        if (!$requete->execute()) {
+            // Si le login est déjà dans la base
+            if ($requete->errorInfo()[0] === '23000') {
+                throw new CreationUtilisateurException(CreationUtilisateurException::LOGIN_DEJA_UTILISE);
+            }
+            else {
+                // Traitement d'erreur minimaliste
+                // Redirection vers une page d'erreur
+                header("Location: erreur.html");
+                exit();
+            }
+        }
+        if ($requete->closeCursor() === false) {
+            // TODO : Journaliser l'erreur
+        }
+    }
 }

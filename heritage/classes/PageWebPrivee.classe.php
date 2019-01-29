@@ -12,4 +12,8 @@ include_once('PageWeb.classe.php');
 
 class PageWebPrivee extends PageWeb
 {
+    public function verrou()
+    {
+        
+    }
 }    
