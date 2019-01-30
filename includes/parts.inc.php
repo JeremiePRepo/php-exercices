@@ -37,7 +37,7 @@ define('NAV', '
     <li><a href="/connexion_et_requete/">Connexion et requête vers une bdd</a></li>
     <li><a href="/heritage/">Héritage : Page Web Privée</a></li>
     <li><a href="/MiniBlog/">Correction : exemple MiniBlog</a></li>
-    <li><a href="/site-cochon.local/">TP : Comptaperso</a></li>
+    <li><a href="' . $_SERVER["REQUEST_URI"] . 'site-cochon.local/">TP : Comptaperso</a></li>
     <li><a href="/passwordHashGenerator/">Generateur de hash php</a></li>
 </ul>
 </nav>');

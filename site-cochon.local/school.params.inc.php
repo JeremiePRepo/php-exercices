@@ -31,7 +31,7 @@ define ('DB_HOST', 'localhost');
 define ('DB_NAME', 'comptaperso.local');
 define ('DB_CHAR', 'UTF8');
 define ('DB_USER', 'root');
-define ('DB_PASS', 'cool1705');
+define ('DB_PASS', 'dadfba16');
 
 // Noms des tables et champs
 define ('DB_USER_TABLE',        'user');

@@ -63,7 +63,8 @@ class DataBase
         catch (PDOException $error)
         {
             // On envoie le message d'erreur dans la section alerte de la page Web
-            WebPage::createInstance()->addAlertMessage(DB_CONNECTION_ERROR_MESSAGE . $error);
+            // WebPage::createInstance()->addAlertMessage(DB_connectionPDO_ERROR_MESSAGE . $error);
+            echo '<pre>'.$error.'</pre>';
         }
     }
 
@@ -87,45 +88,45 @@ class DataBase
 
     // checkEmail()
 
-    // Retourne true si l'email existe en base, false sinon
-    public function checkEmail(string $email) : int
+    // Retourne true ou false si l'email existe ou non dans la base
+    public function checkEmail(string $email) //: bool
     {
         try
         {
-            $PDOStatement = $this->connectionPDO->prepare(' SELECT COUNT(1) 
-                                                            FROM ' . DB_USER_TABLE . ' 
-                                                            WHERE ' . DB_USER_EMAIL_FIELD . ' 
-                                                            LIKE :email');
+            $PDOStatement = $this->connectionPDO->prepare('  SELECT COUNT(1) 
+                                                        FROM '.DB_USER_TABLE.'
+                                                        WHERE '.DB_USER_EMAIL_FIELD.'
+                                                        LIKE :email');
         }
         catch (PDOException $error)
         {
             // On envoie le message d'erreur dans la section alerte de la page Web
-            WebPage::createInstance()->addAlertMessage($error->getMessage());
-            return 2;
+            // WebPage::createInstance()->addAlertMessage($error->getMessage());
+            echo '<pre>ERR Prepare : '.$error.'</pre>';
+            exit;
         }
         if($PDOStatement === false)
         {
             // On envoie le message d'erreur dans la section alerte de la page Web
-            WebPage::createInstance()->addAlertMessage($this->connectionPDO->errorInfo()[2]);
-            return 3;
+            // WebPage::createInstance()->addAlertMessage($this->connectionPDO->errorInfo()[2]);
+            echo '<pre>ERR Response : '.$this->connectionPDO->errorInfo()[2].'</pre>';
+            exit;
         }
         if ($PDOStatement->bindValue(':email',$email,PDO::PARAM_STR) === false) {
             // On envoie le message d'erreur dans la section alerte de la page Web
-            WebPage::createInstance()->addAlertMessage($PDOStatement->errorInfo()[2]);
-            return 4;
+            // WebPage::createInstance()->addAlertMessage($PDOStatement->errorInfo()[2]);
+            echo '<pre>ERR bindvalues : '.$PDOStatement->errorInfo()[2].'</pre>';
+            exit;
         } 
         if($PDOStatement->execute() === false)
         {
             // On envoie le message d'erreur dans la section alerte de la page Web
-            WebPage::createInstance()->addAlertMessage($this->connectionPDO->errorInfo()[2]);
-            return 5;
+            // WebPage::createInstance()->addAlertMessage($this->connectionPDO->errorInfo()[2]);
+            echo '<pre>ERR Execute : '.$this->connectionPDO->errorInfo()[2].$PDOStatement->debugDumpParams().'</pre>';
+            exit;
         }
         // La requete s'est bien effectuée
         $response = $PDOStatement->fetch(PDO::FETCH_NUM);
-        if($response[0] === '1')
-        {
-            return 1;
-        };
-        return 0;
+        echo $response[0];
     }
 }

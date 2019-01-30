@@ -25,3 +25,6 @@ spl_autoload_register(function ($class) {
 
 // On crée la page Web
 WebPage::createInstance();
+
+// On traite les formulaires
+FormsProcessor::processAll();

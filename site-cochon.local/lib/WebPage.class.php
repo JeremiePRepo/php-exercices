@@ -52,9 +52,7 @@ class WebPage
 
     // En private car singleton
     private function __construct()
-    {           
-        // Renplis le contenu de la page
-        FormsProcessor::createInstance()->allForms();
+    {
         $this->fetchPageContent();
     }
 
@@ -213,6 +211,6 @@ class WebPage
 
     public function __destruct()
     {
-        // echo $this->displayPage();
+        echo $this->displayPage();
     }
 }
