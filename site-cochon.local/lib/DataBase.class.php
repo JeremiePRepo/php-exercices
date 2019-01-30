@@ -34,11 +34,9 @@ class DataBase
      | -------------------------------------
     \*/
 
-    // DataBase
-    private static $dataBaseInstance = null; 
-
-    // Object PDO
-    private $connectionPDO;                       
+    
+    private static $dataBaseInstance = null;// DataBase
+    private $connectionPDO;                 // Object PDO                    
 
     /*\
      | -------------------------------------
@@ -127,5 +125,84 @@ class DataBase
             return 1;
         };
         return 0;
+    }
+
+    /*------------------------------------*/
+
+    // createNewUser()
+
+    // Retourne true si le user a bien été enregistré, false s'il y a eu un problème
+    public function createNewUser(string $email, string $name, string $pass) : bool
+    {
+        try
+        {
+            $PDOStatement = $this->connectionPDO->prepare(  'INSERT INTO ' . DB_USER_TABLE . 
+                                                            ' ( ' . DB_USER_NAME_FIELD . ', ' . DB_USER_EMAIL_FIELD . ', ' . DB_USER_PASS_FIELD . ') 
+                                                            VALUES (:name, :email, :pass)');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            return false;
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            return false;
+        }
+        if (($PDOStatement->bindValue(':name', $name, PDO::PARAM_STR) === false) OR
+            ($PDOStatement->bindValue(':email',$email,PDO::PARAM_STR) === false) OR
+            ($PDOStatement->bindValue(':pass', $pass, PDO::PARAM_STR) === false)) 
+        {
+            // Erreur pendant le bindValue
+            return false;
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution
+            return false;
+        }
+        // La requete s'est bien effectuée
+        $PDOStatement->fetch(PDO::FETCH_NUM);
+        return true;
+    }
+
+    /*------------------------------------*/
+
+    // getPassHashByEmail()
+
+    // Retourne le hash du mot de passe correspondant a l'email
+    public function getPassHashByEmail(string $email) : array
+    {
+        try
+        {
+            $PDOStatement = $this->connectionPDO->prepare(  'SELECT ' . DB_USER_PASS_FIELD . 
+                                                            ' FROM '  . DB_USER_TABLE . 
+                                                            ' WHERE ' . DB_USER_EMAIL_FIELD . 
+                                                            ' LIKE :email');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            // TODO : Renvoyer un message d'erreur
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            // TODO : Renvoyer un message d'erreur
+        }
+        if (($PDOStatement->bindValue(':email', $email, PDO::PARAM_STR) === false)) 
+        {
+            // Erreur pendant le bindValue
+            // TODO : Renvoyer un message d'erreur
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution
+            // TODO : Renvoyer un message d'erreur
+        }
+        // La requete s'est bien effectuée
+        $response = $PDOStatement->fetch(PDO::FETCH_NUM);
+        return $response;
     }
 }

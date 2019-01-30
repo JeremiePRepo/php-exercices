@@ -14,7 +14,7 @@
 
     Pour utiliser une méthode :
     Router::createInstance()->
-        getActualPage();
+        getActualPageCode();
 --------------------------------------------
 \*/
 
@@ -35,11 +35,8 @@ class Router
                                 'login',
                                 'signup');
 
-    // Router
-    private static $routerInstance = null;
-
-    // int
-    private $actualPage = 3;
+    private static $routerInstance = null;  // Router
+    private $actualPageCode = 3;            // int
     
     /*\
      | -------------------------------------
@@ -52,8 +49,8 @@ class Router
     // En private car singleton
     private function __construct()
     {
-        // On actualise $actualPage avec le code de la page courante
-        $this->setActualPage();
+        // On actualise $actualPageCode avec le code de la page courante
+        $this->setActualPageCode();
     }
 
     /*------------------------------------*/
@@ -74,41 +71,56 @@ class Router
 
     /*------------------------------------*/
 
-    // setActualPage()
+    // setActualPageCode()
 
-    // Mets à jour $actualPage en fonction du paramètre d'url.
-    public function setActualPage()
+    // Mets à jour $actualPageCode en fonction du paramètre d'url.
+    public function setActualPageCode()
     {
+        // TODO : Le script peut être simplifier
         if (filter_has_var(INPUT_GET , 'page'))
         {
             switch ($_GET['page']) {
                 case 'login':
-                    $this->actualPage = 3;
+                    if(isset($_SESSION['logged']) === true)
+                    {
+                        $this->actualPageCode = 1;  // Accueil
+                        return;
+                    }
+                    $this->actualPageCode = 3;      // Login
                     break;
 
                 case 'signup':
-                    $this->actualPage = 4;
+                    if(isset($_SESSION['logged']) === true)
+                    {
+                        $this->actualPageCode = 1;  // Accueil
+                        return;
+                    }
+                    $this->actualPageCode = 4;      // Signup
                     break;
                 
                 default:
-                // 404
-                $this->actualPage = 2;
+                $this->actualPageCode = 2;          // 404
                 break;
             }
             return;
         }
-        // Pas de paramètre GET = page d'accueil
-        $this->actualPage = 1;
+        // Pas de paramètre GET = page d'accueil, si l'utilisateur est connecté
+        if(isset($_SESSION['logged']) === false)
+        {
+            $this->actualPageCode = 3;              // Login
+            return;
+        }
+        $this->actualPageCode = 1;                  // Accueil
         return;
     }
 
     /*------------------------------------*/
 
-    // getActualPage()
+    // getActualPageCode()
 
-    // Retourne $actualPage.
-    public function getActualPage()
+    // Retourne $actualPageCode.
+    public function getActualPageCode() : int
     {
-        return $this->actualPage;
+        return $this->actualPageCode;
     }
 }

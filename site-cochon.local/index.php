@@ -23,8 +23,15 @@ spl_autoload_register(function ($class) {
     include 'lib/' . $class . '.class.php';
 });
 
-// On crée la page Web
-WebPage::createInstance();
+// On se connecte à la BDD
+$dataBase = DataBase::connect();
+
+// On Vérifie sur quelle page on est
+$actualPageCode = Router::createInstance()->getActualPageCode();
 
 // On traite les formulaires
-FormsProcessor::processAll();
+$infoMessage        = FormsProcessor::processAll($dataBase, $actualPageCode)->getInfoMessage();
+$actualPageDatas    = FormsProcessor::processAll($dataBase, $actualPageCode)->getActualPageDatas();
+
+// On envoie le(s) message(s) de réussite ou d'écheque à la page
+WebPage::createInstance($actualPageCode, $actualPageDatas)->addAlertMessage($infoMessage);

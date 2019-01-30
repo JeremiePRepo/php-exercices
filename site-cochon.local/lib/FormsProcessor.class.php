@@ -28,8 +28,12 @@ class FormsProcessor
      | -------------------------------------
     \*/
 
-    // WebPage
-    private static $formsProcessorInstance = null; 
+    
+    private static $formsProcessorInstance = null;  // WebPage
+    private static $dataBase;                       // DataBase
+    private static $actualPageCode;                 // int
+    private static $actualPageDatas = array();      // array
+    private $infoMessage = '';                      // string
 
     // Error Messages
     const FORM_ERROR_INVALID_EMAIL = 'Email invalide, merci de recommencer';
@@ -45,18 +49,62 @@ class FormsProcessor
     // En private car singleton
     private function __construct()
     {
-        // On traite le formulaire de login si remplis
-        $this->loginForm();
+        
+        // On traite le formulaire d'inscription
+        // $message = $this->signUp();
+
+        switch (self::$actualPageCode) {
+            
+            case 3:
+                // On traite le formulaire de login
+                $this->infoMessage = $this->loginForm();
+                break;
+
+            case 4:
+                // On traite le formulaire de login
+                $this->infoMessage = $this->signUp();
+                break;
+            
+            default:
+                break;
+        }
+
     }
 
     /*------------------------------------*/
 
-    // createInstance()
+    // getInfomessage()
+
+    // Getter pour $infoMessage
+    public function getInfoMessage() : string
+    {
+        return $this->infoMessage;
+    }
+
+    /*------------------------------------*/
+
+    // getActualPageDatas()
+
+    // Getter pour $actualPageDatas
+    public function getActualPageDatas() : array
+    {
+        return self::$actualPageDatas;
+    }
+
+    /*------------------------------------*/
+
+    // processAll()
 
     // Permets d'instancier la page
-    public static function processAll() : FormsProcessor
+    public static function processAll(DataBase $dataBase, int $actualPageCode) : FormsProcessor
     {
-        // Si Il n'existe pas déjà de connexion
+        // FormProcessor aura besoin du code de la page pour savoir quel formulaire traiter
+        self::$actualPageCode = $actualPageCode;
+
+        // La classe aura besoin d'une connexion BDD
+        self::$dataBase = $dataBase;
+
+        // Si Il n'existe pas déjà une instance de FormProcessor
         if(!self::$formsProcessorInstance)                 
         {
             // On instancie par la méthode __construct
@@ -69,15 +117,15 @@ class FormsProcessor
 
     // loginForm()
 
-    // Traite la première partie du formulaire d'inscription
-    public function loginForm()
+    // Traite la première partie du formulaire de login/inscription
+    public function loginForm() : string
     {
         // Le formulaire d'inscription a-t-il été remplis ?
         if( !filter_has_var(INPUT_POST , 'login-email') OR
             !filter_has_var(INPUT_POST , 'login-pass'))
         {
             // Le formulaire de login n'a pas été rempli.
-            return;
+            return '';
         }
 
         // Le formulaire de login a été rempli
@@ -88,27 +136,114 @@ class FormsProcessor
         if(!(filter_var($email, FILTER_VALIDATE_EMAIL)))
         {
             // L'email est invalide
-            WebPage::createInstance()->addAlertMessage(self::FORM_ERROR_INVALID_EMAIL);
-            return;
+            return self::FORM_ERROR_INVALID_EMAIL;
         }
+        
+        // L'email extste-t-il ? oui === 1, non === 0, erreur === [2,3,4 ou 5]
+        switch (self::$dataBase->checkEmail($_POST['login-email'])) {
+            case 1:
+                // L'email existe déja
+
+                // On vérifie le password
+                // TODO
+                break;
+            
+            case 0:
+                // L'email n'existe pas
+        
+                // On enregistre les infos passés dans les variables de session
+                $_SESSION['login-mail'] = $email;
+                $_SESSION['login-pass'] = $password;
+                
+                // On demande l'affichage du formulaire de création de compte
+                header("Location: ?page=signup");
+                break;
+            
+            default:
+                // Il y a eu une erreur, on reste sur la page Login
+                // TODO : renvoyer une alerte demandant de contacter l'admin 
+                return 'Erreur. Ben ouai.';
+        }
+
+        // L'email existe déjà, on vérifie le mot de passe
+        if(password_verify($password, self::$dataBase->getPassHashByEmail($email)[0]) === false)
+        {
+            return 'Mauvais mot de passe';
+        }
+
+        // Les mots de passes correspondent
+        $_SESSION['logged'] = true;
+        return 'login, bienvenue';
+    }
+
+    /*------------------------------------*/
+
+    // signUp()
+
+    // Traite la deuxième partie du formulaire d'inscription
+    public function signUp() : string
+    {
+        // On vérifie que l'utilisateur viens de la page login
+        if( (isset($_SESSION['login-mail'], $_SESSION['login-pass']) === false))
+        {
+            // L'utilisateur ne viens pas du formulaire de login, on le redirige
+            header("Location: ?page=login");
+        }
+
+        // L'objet WebPage aura besoin de d'nfos
+        self::$actualPageDatas = array( 'login-mail' => $_SESSION['login-mail'],
+                                        'login-pass' => $_SESSION['login-pass']);
+
+        // Les variables de session ne sont maintenant plus utiles, on les détruits
+        // TODO : vvv mettre à la fin du traitement et en page login vvv
+        // unset($_SESSION['login-mail']);
+        // unset($_SESSION['login-pass']);
+        // TODO : ^^^ mettre à la fin du traitement et en page login ^^^
+
+        // Le formulaire d'inscription a-t-il été remplis ?
+        if( !filter_has_var(INPUT_POST , 'signup-email') OR
+            !filter_has_var(INPUT_POST , 'signup-name')  OR
+            !filter_has_var(INPUT_POST , 'signup-pass')  OR
+            !filter_has_var(INPUT_POST , 'signup-pass-confirm'))
+        {
+            // Le formulaire d'inscription n'a pas encore été rempli.
+            return 'E-mail inconnu, voulez-vous créer un compte ?';
+        }
+
+        // L'utilisateur a rempli le formulaire d'inscription, on le traite
 
         // L'email extste-t-il ? oui === 1, non === 0, erreur === [2,3,4 ou 5]
-        $existence = DataBase::connect()->checkEmail($_POST['login-email']);
+        switch (self::$dataBase->checkEmail($_POST['signup-email'])) {
+            case 1:
+                // L'email existe déja. On redirige vers le login en le signalant.
+                // TODO : Transmettre le message : "Email déjà existant, voulez-vous vous connecter ?"
+                // TODO : Transmettre l'email pour pré-remplir le formulaire de login.
+                header("Location: ?page=login");
+                break;
 
-        if($existence === 1)
-        {
-            // L'email existe déja
-
-            // On vérifie le password
+            case 0:                
+                // On vérifie si les mots de passe correspondent
+                if($_POST['signup-pass'] !== $_POST['signup-pass-confirm'])
+                {
+                    // les mots de passe ne correspondent pas, 
+                    // On enregistre le name en session avant de recharger la page
+                    // TODO : Trouver où la détruire
+                    $_SESSION['signup-name'] = $_POST['signup-name'];
+                    // on alerte l'utilisateur.
+                    return 'Les mots de passes ne correspondent pas.';
+                }
+                break;
+            
+            default:
+                return 'Erreur de base de donnée';
+                break;
         }
 
-        if($existence === 0)
+        // Tout à l'aire bien remplis, on enregistre l'utilisateur en base
+        if((self::$dataBase->createNewUser($_POST['signup-email'], $_POST['signup-name'], password_hash($_POST['signup-pass'], PASSWORD_DEFAULT))) === false)
         {
-            // L'email n'existe pas
-    
-            // On demande l'affichage du formulaire de création de compte
+            return 'Problème lors de l\'enregistrement';
         }
-        // Il y a eu une erreur, on reste sur la page Login
-        // TODO : renvoyer une alerte demandant de contacter l'admin 
+        return 'Nouveau compte créé, bienvenue';
     }
 }

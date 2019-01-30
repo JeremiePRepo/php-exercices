@@ -30,17 +30,14 @@ class WebPage
      | -------------------------------------
     \*/
 
-    // WebPage
-    private static $webPageInstance = null; 
+    
+    private static $webPageInstance = null; // WebPage
+    private static $actualPageCode;         // int
+    private static $actualPageDatas;        // array
+    private $HTMLStyles = '';               // string
+    private $pageContent = '';              // string
+    private $alertMessages = '';            // string
 
-    // string
-    private $HTMLStyles = '';
-
-    // string
-    private $pageContent = '';
-
-    // string
-    private $alertMessages = '';
     
     /*\
      | -------------------------------------
@@ -61,8 +58,14 @@ class WebPage
     // createInstance()
 
     // Permets d'instancier la page
-    public static function createInstance() : WebPage
+    public static function createInstance(int $actualPageCode, array $actualPageDatas) : WebPage
     {
+        // La classe aura besoin de savoir sur quelle page on est
+        self::$actualPageCode = $actualPageCode;
+
+        // Et éventuellement quelques infos venant du traitement de formulaires
+        self::$actualPageDatas = $actualPageDatas;
+
         // Si Il n'existe pas déjà de connexion
         if(!self::$webPageInstance)                 
         {
@@ -106,50 +109,97 @@ class WebPage
     public function fetchPageContent()
     {
         // On récupère le code de la page actuelle
-        switch (Router::createInstance()->getActualPage()) {
+        switch (self::$actualPageCode) {
             case 1:
                 // Page principale
                 $this->pageContent = 'Page Principale';
                 break;
             
             case 3:
-                // Page principale
-                $this->pageContent = '  <form class="form-horizontal" method="post">
+                // Page login
+                $this->pageContent = '  <form method="post">
                                             <fieldset>
                                             
-                                            <!-- Form Name -->
-                                            <legend>Se connecter ou créer un compte</legend>
-                                            
-                                            <!-- Text input-->
-                                            <div class="form-group">
-                                                <label class="col-md-4 control-label" for="login_email">Votre email</label>  
-                                                <div class="col-md-4">
-                                                    <input id="login_email" name="login-email" type="text" placeholder="" class="form-control input-md" required="">
+                                                <!-- Form Name -->
+                                                <legend>Se connecter ou créer un compte</legend>
+                                                
+                                                <!-- Text input-->
+                                                <div>
+                                                    <label for="login-email">Votre email</label>  
+                                                    <div>
+                                                        <input name="login-email" type="email" placeholder="" required="">
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            
-                                            <!-- Password input-->
-                                            <div class="form-group">
-                                                <label class="col-md-4 control-label" for="login-pass">Mot de passe</label>
-                                                <div class="col-md-4">
-                                                    <input id="login-pass" name="login-pass" type="password" placeholder="" class="form-control input-md" required="">
+                                                
+                                                <!-- Password input-->
+                                                <div>
+                                                    <label control-label" for="login-pass">Mot de passe</label>
+                                                    <div>
+                                                        <input name="login-pass" type="password" placeholder="" required="">
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            
-                                            <!-- Button -->
-                                            <div class="form-group">
-                                                <div class="col-md-4">
-                                                    <input type="submit" value="Valider">
+                                                
+                                                <!-- Button -->
+                                                <div>
+                                                    <div>
+                                                        <input type="submit" value="Valider">
+                                                    </div>
                                                 </div>
-                                            </div>
 
                                             </fieldset>
                                         </form>';
                 break;
             
             case 4:
-                // Page principale
-                $this->pageContent = 'Page Signup';
+                // Page de création de compte
+                $this->pageContent = '  <form method="post">
+                                            <fieldset>
+                                            
+                                                <!-- Form Name -->
+                                                <legend>Créer un compte</legend>
+                                                
+                                                <!-- Text input-->
+                                                <div>
+                                                    <label for="signup-email">E-mail</label>  
+                                                    <div>
+                                                        <input name="signup-email" type="email" placeholder="" required="" value="' . self::$actualPageDatas["login-mail"] . '">
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Text input-->
+                                                <div>
+                                                    <label for="signup-name">Nom d\'utilisateur</label>  
+                                                    <div>
+                                                        <input name="signup-name" type="text" placeholder="" required="" value="' . (isset($_SESSION["signup-name"]) ? $_SESSION["signup-name"] : "" ) . '">
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Password input-->
+                                                <div>
+                                                    <label for="signup-pass">Mot de passe</label>
+                                                    <div>
+                                                        <input name="signup-pass" type="password" placeholder="" required="" value="' . self::$actualPageDatas["login-pass"] . '">
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Password input-->
+                                                <div>
+                                                    <label for="signup-pass-confirm">Confirmez votre mot de passe</label>
+                                                    <div>
+                                                        <input name="signup-pass-confirm" type="password" placeholder="" required="">
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Button -->
+                                                <div>
+                                                    <div>
+                                                        <input type="submit" value="Créer un compte">
+                                                    </div>
+                                                </div>
+                                            
+                                            </fieldset>
+                                        </form>
+                                        <a href="?page=login">< Page de login</a>';
                 break;
             
             default:
@@ -177,7 +227,7 @@ class WebPage
     // Met en place les messages d'alertes
     public function addAlertMessage($message)
     {
-        $this->alertMessages .= $message . '<br>';
+        $this->alertMessages .= $message;
     }
 
     /*------------------------------------*/
@@ -187,6 +237,13 @@ class WebPage
     // Permets de retourner les balises styles rentrées en paramètres
     public function displayPage() : string
     {
+
+        // Mise en forme des messages d'alert s'il y en a
+        $HTMLAlertMessages = ""; // string
+        if ($this->alertMessages !== "") {
+            $HTMLAlertMessages = '<pre>' . $this->alertMessages . '</pre>';
+        }
+
         // On affiche la page
         return '    <!DOCTYPE html>
                     <html lang="' . SITE_LANG . '">
@@ -198,8 +255,8 @@ class WebPage
                         <title>' . SITE_TITLE . '</title>
                     </head>
                     <body>
-                        <pre>' . $this->alertMessages . '</pre>
                         <h1>' . SITE_TITLE . '</h1>
+                        ' . $HTMLAlertMessages . '
                         ' . $this->pageContent . '
                     </body>
                     </html>';
