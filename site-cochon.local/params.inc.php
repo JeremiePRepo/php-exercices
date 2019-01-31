@@ -15,11 +15,14 @@
 \*----------------------------------------*/
 
 define ('SITE_TITLE', 'Site cochon');
-define ('SITE_LANG', 'fr');
+define ('SITE_LANG' , 'fr');
+define ('SITE_LOGO' , '<img src="public/images/logo.png" alt="Logo cochon tirelire" height="128" width="128">');
 define ('SITE_STYLES', array(   '<link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">',
                                 '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css" type="text/css">',
                                 '<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura-dark.css" type="text/css">',
                                 '<link rel="stylesheet" href="public/css/style.css" type="text/css">'));
+
+define ('LINE_BREAK', '<br>');
 
 /*----------------------------------------*\
     DB infos

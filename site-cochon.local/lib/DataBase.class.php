@@ -67,7 +67,7 @@ class DataBase
 
     /*------------------------------------*/
 
-    // createInstance()
+    // connect()
 
     // Permets d'instancier la page
     public static function connect() : DataBase
@@ -203,6 +203,136 @@ class DataBase
         }
         // La requete s'est bien effectuée
         $response = $PDOStatement->fetch(PDO::FETCH_NUM);
+        return $response;
+    }
+
+    /*------------------------------------*/
+
+    // getUserIdByEmail()
+
+    // Retourne l'id utilisateur correspondant a l'email
+    public function getUserIdByEmail(string $email) : string
+    {
+        try
+        {
+            $PDOStatement = $this->connectionPDO->prepare(  'SELECT ' . DB_USER_ID_FIELD . 
+                                                            ' FROM '  . DB_USER_TABLE . 
+                                                            ' WHERE ' . DB_USER_EMAIL_FIELD . 
+                                                            ' LIKE :email');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            // TODO : Renvoyer un message d'erreur
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            // TODO : Renvoyer un message d'erreur
+        }
+        if (($PDOStatement->bindValue(':email', $email, PDO::PARAM_STR) === false)) 
+        {
+            // Erreur pendant le bindValue
+            // TODO : Renvoyer un message d'erreur
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution
+            // TODO : Renvoyer un message d'erreur
+        }
+        // La requete s'est bien effectuée
+        $response = $PDOStatement->fetch(PDO::FETCH_NUM);
+        return $response[0];
+    }
+
+    /*------------------------------------*/
+
+    // getUserNameById()
+
+    // Retourne le nom de l'utilisateur correspondant a l'ID
+    public function getUserNameById(int $id) : string
+    {
+        try
+        {
+            // SELECT `user_name` FROM `user` WHERE `id` = 9
+            $PDOStatement = $this->connectionPDO->prepare(  'SELECT ' . DB_USER_NAME_FIELD . 
+                                                            ' FROM '  . DB_USER_TABLE . 
+                                                            ' WHERE ' . DB_USER_ID_FIELD . 
+                                                            ' LIKE :id');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            // TODO : Renvoyer un message d'erreur
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            // TODO : Renvoyer un message d'erreur
+        }
+        if (($PDOStatement->bindValue(':id', $id, PDO::PARAM_STR) === false)) 
+        {
+            // Erreur pendant le bindValue
+            // TODO : Renvoyer un message d'erreur
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution
+            // TODO : Renvoyer un message d'erreur
+        }
+        // La requete s'est bien effectuée
+        $response = $PDOStatement->fetch(PDO::FETCH_NUM);
+        return $response[0];
+    }
+
+    /*------------------------------------*/
+
+    // createNewPiggyBank()
+
+    // Crée une nouvelle tirelire
+    // INSERT INTO `bank_account` (`name`, `pk_user`) VALUES ('Compte courant', '9');
+    public function createNewPiggyBank(string $piggyBankName, int $userId) : string
+    {
+        // TODO
+    }
+
+    /*------------------------------------*/
+
+    // getPiggyBanksByUserId()
+
+    // Récupérer les tirelires en fonction d'un ID d'utilisateur
+    public function getPiggyBanksByUserId(int $userId) : array
+    {
+        try
+        {
+            // SELECT `id`, `name` FROM `bank_account` WHERE `pk_user` = 9
+            $PDOStatement = $this->connectionPDO->prepare(  'SELECT ' . DB_BANK_ID_FIELD . ', ' . DB_BANK_NAME_FIELD . 
+                                                            ' FROM '  . DB_BANK_TABLE . 
+                                                            ' WHERE ' . DB_BANK_PK_USER_FIELD . 
+                                                            ' = :userId');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            // TODO : Renvoyer un message d'erreur
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            // TODO : Renvoyer un message d'erreur
+        }
+        if (($PDOStatement->bindValue(':userId', $userId, PDO::PARAM_INT) === false)) 
+        {
+            // Erreur pendant le bindValue
+            // TODO : Renvoyer un message d'erreur
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution
+            // TODO : Renvoyer un message d'erreur
+        }
+        // La requete s'est bien effectuée
+        $response = $PDOStatement->fetchAll(PDO::FETCH_NAMED);
         return $response;
     }
 }

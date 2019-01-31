@@ -53,7 +53,7 @@ class WebPage
         $this->fetchPageContent();
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // createInstance()
 
@@ -112,12 +112,36 @@ class WebPage
         switch (self::$actualPageCode) {
             case 1:
                 // Page principale
-                $this->pageContent = 'Page Principale';
+
+                // On récupère l'ID de l'utilisateur
+                $userID = intval($_SESSION['user-id']);
+
+                // On lui dit bonjour
+                $this->alertMessages .= 'Bonjour ' . DataBase::connect()->getUserNameById($userID) . LINE_BREAK;
+
+                // On récupère les tirelires de l'utilisateur dans un array
+                $piggyBank = DataBase::connect()->getPiggyBanksByUserId($userID);
+
+                /////////////////////////////////////////////////////////////
+                var_dump($piggyBank);
+                if(empty($piggyBank) === true)
+                {
+                    echo 'Array vide === null';
+                }
+                else
+                {
+                    echo 'Array vide != null';
+                }
+                die;
+                /////////////////////////////////////////////////////////////
+
+                $this->pageContent = '<p>Page Principale</p>';
                 break;
             
             case 3:
                 // Page login
-                $this->pageContent = '  <form method="post">
+                $this->pageContent = '  <p>Vous êtes sur un formulaire magique : entrez vos informations pour vous connecter OU créer un compte.</p><br>
+                                        <form method="post">
                                             <fieldset>
                                             
                                                 <!-- Form Name -->
@@ -204,7 +228,8 @@ class WebPage
             
             default:
                 // Page 404
-                $this->pageContent = 'Page 404';
+                $this->pageContent = '  <p>Page 404</p>
+                                        <a href="?page=login">< Retour à la réalité</a>';
         }
     }
 
@@ -217,6 +242,44 @@ class WebPage
     public function getPageContent() : string
     {
         return $this->pageContent;
+    }
+
+    /*------------------------------------*/
+    
+    
+    // getMenu()
+    
+    // Renvois le contenu de la page
+    public function getMenu() : string
+    {
+        // TODO : Factoriser le code
+        $host  = $_SERVER['HTTP_HOST'];
+        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+
+        // menu
+        return '<nav>
+                    <ul class="menu main">
+                        <li>
+                            <a href="#">Vue globale</a>
+                        </li>
+                        <li>
+                            <a href="#">Mon profil</a>
+                        </li>
+                        <li>
+                            <a href="http://' . $host . $uri . '/?page=deconnection">Déconnexion</a>
+                        </li>
+                    </ul>
+                </nav>
+                <nav>
+                    <ul class="menu sub">
+                        <li>
+                            <a href="#">Gérer les tirelires</a>
+                        </li>
+                        <li>
+                            <a href="#">Nouveau mouvement</a>
+                        </li>
+                    </ul>
+                </nav>';
     }
 
     /*------------------------------------*/
@@ -239,9 +302,17 @@ class WebPage
     {
 
         // Mise en forme des messages d'alert s'il y en a
-        $HTMLAlertMessages = ""; // string
-        if ($this->alertMessages !== "") {
+        $HTMLAlertMessages = ''; // string
+        if ($this->alertMessages !== '') {
             $HTMLAlertMessages = '<pre>' . $this->alertMessages . '</pre>';
+        }
+
+        // Si nous sommes en page d'accueil, on affiche le cochon et le menu
+        $logo = ''; // string
+        $menu = ''; // string
+        if ((self::$actualPageCode) === 1) {
+            $logo = SITE_LOGO;
+            $menu = $this->getMenu();
         }
 
         // On affiche la page
@@ -255,8 +326,9 @@ class WebPage
                         <title>' . SITE_TITLE . '</title>
                     </head>
                     <body>
-                        <h1>' . SITE_TITLE . '</h1>
+                        <h1>' . $logo . SITE_TITLE . '</h1>
                         ' . $HTMLAlertMessages . '
+                        ' . $menu . '
                         ' . $this->pageContent . '
                     </body>
                     </html>';

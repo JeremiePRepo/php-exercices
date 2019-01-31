@@ -56,12 +56,12 @@ class FormsProcessor
         switch (self::$actualPageCode) {
             
             case 3:
-                // On traite le formulaire de login
+                // Page Loggin, on traite le formulaire de login
                 $this->infoMessage = $this->loginForm();
                 break;
 
             case 4:
-                // On traite le formulaire de login
+                // Page inscription, on traite le formulaire signup
                 $this->infoMessage = $this->signUp();
                 break;
             
@@ -120,6 +120,15 @@ class FormsProcessor
     // Traite la première partie du formulaire de login/inscription
     public function loginForm() : string
     {
+        // Si l'utilisateur est loggé, on l'envoie en page principale
+        // TODO : Créer une méthode pour tester si loggé
+        if(isset($_SESSION['logged']) === true)
+        {
+            $host  = $_SERVER['HTTP_HOST'];
+            $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+            header("Location: http://$host$uri/");
+        }
+
         // Le formulaire d'inscription a-t-il été remplis ?
         if( !filter_has_var(INPUT_POST , 'login-email') OR
             !filter_has_var(INPUT_POST , 'login-pass'))
@@ -173,7 +182,13 @@ class FormsProcessor
 
         // Les mots de passes correspondent
         $_SESSION['logged'] = true;
-        return 'login, bienvenue';
+        $_SESSION['user-id'] = self::$dataBase->getUserIdByEmail($_POST['login-email']);
+
+        // TODO : Factoriser le code
+        // On redirige vers la page principale
+        $host  = $_SERVER['HTTP_HOST'];
+        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        header("Location: http://$host$uri/");
     }
 
     /*------------------------------------*/
@@ -182,7 +197,7 @@ class FormsProcessor
 
     // Traite la deuxième partie du formulaire d'inscription
     public function signUp() : string
-    {
+    {        
         // On vérifie que l'utilisateur viens de la page login
         if( (isset($_SESSION['login-mail'], $_SESSION['login-pass']) === false))
         {
@@ -196,6 +211,7 @@ class FormsProcessor
 
         // Les variables de session ne sont maintenant plus utiles, on les détruits
         // TODO : vvv mettre à la fin du traitement et en page login vvv
+        // TODO : où créer un classe Session
         // unset($_SESSION['login-mail']);
         // unset($_SESSION['login-pass']);
         // TODO : ^^^ mettre à la fin du traitement et en page login ^^^
@@ -244,6 +260,15 @@ class FormsProcessor
         {
             return 'Problème lors de l\'enregistrement';
         }
-        return 'Nouveau compte créé, bienvenue';
+
+        // La création du nouvel utilisateur s'est bien déroulé
+        $_SESSION['user-id'] = self::$dataBase->getUserIdByEmail($_POST['signup-email']);
+        $_SESSION['logged'] = true;
+
+        // TODO : Factoriser le code
+        // On redirige vers la page principale
+        $host  = $_SERVER['HTTP_HOST'];
+        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        header("Location: http://$host$uri/");
     }
 }
