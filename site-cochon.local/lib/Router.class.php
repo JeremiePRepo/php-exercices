@@ -34,11 +34,16 @@ class Router
                                 '404',
                                 'login',
                                 'signup',
-                                'deconnection');
+                                'deconnection',
+                                'piggybanks',
+                                'new-piggybank',
+                                'delete-piggybank',
+                                'new-movement');
 
     private static $routerInstance = null;  // Router
     private static $infoMessage = '';       // string
     private $actualPageCode = 3;            // int
+    private $siteURL;                       // string
     
     /*\
      | -------------------------------------
@@ -53,9 +58,12 @@ class Router
     {
         // On actualise $actualPageCode avec le code de la page courante
         $this->setActualPageCode();
+
+        // On stock l'URL du site
+        $this->setSiteURL();
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // createInstance()
 
@@ -71,7 +79,7 @@ class Router
         return self::$routerInstance; 
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getInfoMessage()
 
@@ -81,7 +89,29 @@ class Router
         return self::$infoMessage;
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
+
+    // setSiteURL()
+
+    // Construit l'url du site
+    public function setSiteURL()
+    {
+        $host  = $_SERVER['HTTP_HOST'];
+        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        $this->siteURL = SITE_PROTOCOL . $host . $uri . '/';
+    }
+
+    ////////////////////////////////////////
+
+    // getSiteURL()
+
+    // Retourne l'url du site
+    public function getSiteURL() : string
+    {
+        return $this->siteURL;
+    }
+
+    ////////////////////////////////////////
 
     // setActualPageCode()
 
@@ -107,11 +137,8 @@ class Router
 
             if(($_GET['page'] === 'login') AND $logged === true)
             {
-                // TODO : Factoriser le code
                 // On redirige vers la page principale
-                $host  = $_SERVER['HTTP_HOST'];
-                $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-                header("Location: http://$host$uri/");
+                header("Location: " . $this->siteURL);
             }
 
             if(($_GET['page'] === 'deconnection'))
@@ -120,11 +147,8 @@ class Router
                 session_unset();
                 session_destroy();
 
-                // TODO : Factoriser le code
                 // On redirige vers la page login
-                $host  = $_SERVER['HTTP_HOST'];
-                $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-                header("Location: http://$host$uri/?page=login");
+                header("Location: " . $this->siteURL . "?page=login");
             }
 
             if(($_GET['page'] === 'signup') AND $logged === false)
@@ -135,11 +159,77 @@ class Router
 
             if(($_GET['page'] === 'signup') AND $logged === true)
             {
-                // TODO : Factoriser le code
                 // On redirige vers la page principale
-                $host  = $_SERVER['HTTP_HOST'];
-                $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-                header("Location: http://$host$uri/");
+                header("Location: " . $this->siteURL);
+            }
+
+            if(($_GET['page'] === 'piggybanks') AND $logged === true)
+            {
+                $this->actualPageCode = 6;  // PiggyBanks
+                return;
+            }
+
+            if(($_GET['page'] === 'new-piggybank') AND $logged === true)
+            {
+                $this->actualPageCode = 7;  // New PiggyBank
+                return;
+            }
+
+            if(($_GET['page'] === 'delete-piggybank') AND $logged === true)
+            {
+                $this->actualPageCode = 8;  // Delete PiggyBank
+                
+                // On vérifie qu'il existe bien un paramètre avec un ID de tirelire
+                if (!filter_has_var(INPUT_GET , 'piggybank-id')) 
+                {
+                    $this->actualPageCode = 1; // Accueil
+                    // Pas d'ID de tirelire, on redirige
+                    header("Location: " . $this->siteURL);
+                }
+
+                // On vérifie que la tirelire appartient bien au User
+                $dataBase = DataBase::connect();
+                $user = User::createInstance(intval($_SESSION['user-id']));
+                $user->setPiggyBanks($dataBase);
+                $piggyBanks = $user->getPiggyBanks();
+                echo'<pre>';var_dump( $piggyBanks);echo'</pre>';
+
+                $found = false;
+                foreach ($piggyBanks as $piggyBank) 
+                {
+                    if(in_array($_GET['piggybank-id'],$piggyBank))
+                    {
+                        $found = true;
+                    }
+                }
+                
+                // Si la tirelire n'appartient pas au user, on redirige
+                if ($found === false) {
+                    $this->actualPageCode = 1; // Accueil
+                    // Pas d'ID de tirelire, on redirige
+                    header("Location: " . $this->siteURL);
+                }
+
+                // On peux supprimer la tirelire en toute sécurité
+                if(($dataBase->deletePiggyBank(intval($_GET['piggybank-id']))) === false)
+                {
+                    // Il Y a eu une erreur
+                    // TODO : Message d'erreur
+                }
+
+                // Tirelire supprimé, Retour à la liste des tirelires
+                $this->actualPageCode = 6;  // PiggyBanks
+                // TODO : le message ne s'affiche pas ??
+                $_SESSION['info-message'] = 'Tirelire supprimée';
+                header("Location: ?page=piggybanks");
+
+                return;
+            }
+            
+            if(($_GET['page'] === 'new-movement') AND $logged === true)
+            {
+                $this->actualPageCode = 9;  // New PiggyBank
+                return;
             }
 
             // Le paramètre page est invalide
@@ -162,7 +252,7 @@ class Router
         $this->actualPageCode = 3;          // Login
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getActualPageCode()
 

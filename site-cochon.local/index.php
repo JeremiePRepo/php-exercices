@@ -34,5 +34,24 @@ $infoMessage    = Router::createInstance()->getInfoMessage();
 $infoMessage        .= FormsProcessor::processAll($dataBase, $actualPageCode)->getInfoMessage();
 $actualPageDatas     = FormsProcessor::processAll($dataBase, $actualPageCode)->getActualPageDatas();
 
+// On crée une instance de la page Web
+$webPage = WebPage::createInstance($actualPageCode, $actualPageDatas);
+
+// Si l'utilisateur est connecté, on s'arrête ici
+if (isset($_SESSION['logged']) === false) {
+    
+    // On envoie le(s) message(s) d'infos à la page
+    $webPage->addAlertMessage($infoMessage);
+    die;
+}
+
+// A partir d'ici, l'utilisateur est connecté
+
+// On instancie la classe User
+$user = User::createInstance(intval($_SESSION['user-id']));
+
+// On envoie la liste des tirelires
+$user->setPiggyBanks($dataBase);
+
 // On envoie le(s) message(s) d'infos à la page
-WebPage::createInstance($actualPageCode, $actualPageDatas)->addAlertMessage($infoMessage);
+$webPage->addAlertMessage($infoMessage);

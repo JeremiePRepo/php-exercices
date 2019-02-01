@@ -12,6 +12,11 @@
 
     Pour instancier la WebPage : 
     WebPage::createInstance();
+
+    // TODO : Passer WebPage en classe 
+    // TODO | abstraite, et créer des 
+    // TODO | classes enfants pour les 
+    // TODO | différentes pages.
 --------------------------------------------
 \*/
 
@@ -51,6 +56,16 @@ class WebPage
     private function __construct()
     {
         $this->fetchPageContent();
+
+        // La page précédente nous a-t-elle laissé un petit mot ?
+        if(isset($_SESSION['info-message']) === true)
+        {
+            // Ajout du message dans la section info
+            $this->alertMessages .= $_SESSION['info-message'];
+
+            // Destruction de la variable de session.
+            unset($_SESSION['info-message']);
+        }
     }
 
     ////////////////////////////////////////
@@ -75,7 +90,7 @@ class WebPage
         return self::$webPageInstance; 
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
     
     // getHTMLStyles()
     
@@ -89,8 +104,7 @@ class WebPage
         return $this->HTMLStyles;
     }
 
-    /*------------------------------------*/
-    
+    ////////////////////////////////////////
     
     // setPageContent()
     
@@ -100,8 +114,7 @@ class WebPage
         $this->pageContent = $content;
     }
 
-    /*------------------------------------*/
-    
+    ////////////////////////////////////////
     
     // fetchPageContent()
     
@@ -117,25 +130,22 @@ class WebPage
                 $userID = intval($_SESSION['user-id']);
 
                 // On lui dit bonjour
-                $this->alertMessages .= 'Bonjour ' . DataBase::connect()->getUserNameById($userID) . LINE_BREAK;
+                $this->alertMessages .= 'Bonjour ' . htmlspecialchars(DataBase::connect()->getUserNameById($userID)) . LINE_BREAK;
 
                 // On récupère les tirelires de l'utilisateur dans un array
                 $piggyBank = DataBase::connect()->getPiggyBanksByUserId($userID);
 
-                /////////////////////////////////////////////////////////////
-                var_dump($piggyBank);
+                // L'utilisateur a-til déjà créé une tirelire ?
                 if(empty($piggyBank) === true)
                 {
-                    echo 'Array vide === null';
+                    // Ici l'utilisateur n'a pas encore créé de tirelire
+                    $this->pageContent = '<p>Vous n\'avez encore aucune tirelire. Ce serait une bonne idée d\'en <a href="' . Router::createInstance()->getSiteURL() . '?page=new-piggybank">créer une</a>.</p>';
+                    break;
                 }
-                else
-                {
-                    echo 'Array vide != null';
-                }
-                die;
-                /////////////////////////////////////////////////////////////
+                // Ici, l'utilisateur à déjà créé au moins une tirelire
 
-                $this->pageContent = '<p>Page Principale</p>';
+                /////////////////////////////////////////////////////////////
+                $this->pageContent = '<p>[WIP] Page Principale [WIP]</p>';
                 break;
             
             case 3:
@@ -225,16 +235,150 @@ class WebPage
                                         </form>
                                         <a href="?page=login">< Page de login</a>';
                 break;
-            
+
+            case 6:
+                // PiggyBanks
+                $this->pageContent = '<h3>Mes tirelires</h3><br>';
+
+                $user = User::createInstance(intval($_SESSION['user-id']));
+
+                // On envoie la liste des tirelires
+                $user->setPiggyBanks(DataBase::connect());
+
+                // On récupère la liste des tirelires
+                $piggyBanks = $user->getPiggyBanks();
+
+                $this->pageContent .= '<ul>';
+                foreach ($piggyBanks as $piggyBank) {
+                    $this->pageContent .= '<li>' . $piggyBank["name"] . ' <a href="?page=delete-piggybank&piggybank-id=' . $piggyBank["id"] . '">[X]</a></li>';
+                }
+                $this->pageContent .= '</ul>';
+
+                if (empty($piggyBanks)) {
+                    $this->pageContent .= '<p>Aucune</p>';
+                }
+
+                $this->pageContent .= '<a href="?page=new-piggybank">Créer une nouvelle tirelire.</a>';
+                break;
+
+            case 7:
+                // New Piggybank
+                $this->pageContent = '<h3>Nouvelle tirelire</h3><br>';
+                
+                $this->pageContent .= '  <form method="post">
+                                            <fieldset>
+                                            
+                                            <!-- Form Name -->
+                                            <legend>Nouvelle tirelire</legend>
+                                            
+                                            <!-- Text input-->
+                                            <div class="form-group">
+                                                <label class="col-md-4 control-label" for="piggybank-name">Nom de la tirelire</label>  
+                                                <div class="col-md-4">
+                                                    <input id="piggybank-name" name="piggybank-name" type="text" placeholder="" class="form-control input-md" required="">
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Number input-->
+                                            <div class="form-group">
+                                                <label class="col-md-4 control-label" for="piggybank-amount">Montant initial</label>  
+                                                <div class="col-md-4">
+                                                    <input type="number" name="piggybank-start-amount" min="0" value="0" step=".01"><span> €</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Button -->
+                                            <div class="form-group">
+                                                <div class="col-md-4">
+                                                    <input type="submit" value="Créer">
+                                                </div>
+                                            </div>
+                                            
+                                            </fieldset>
+                                        </form>';
+
+                break;
+
+            case 9:
+                // New Movement
+
+                $this->pageContent = '<h3>Nouveau mouvement</h3><br>';
+
+                $this->pageContent .= ' <form class="form-horizontal">
+                                        <fieldset>
+                                        
+                                        <!-- Form Name -->
+                                        <legend>Nouveau mouvement</legend>
+                                        
+                                        <!-- Multiple Radios -->
+                                        <div class="form-group">
+                                        <label class="col-md-4 control-label" for="type">Type de mouvement</label>
+                                        <div class="col-md-4">
+                                        <div class="radio">
+                                            <label for="type-0">
+                                            <input type="radio" name="type" id="type-0" value="1" checked="checked">
+                                            Ressource
+                                            </label>
+                                            </div>
+                                        <div class="radio">
+                                            <label for="type-1">
+                                            <input type="radio" name="type" id="type-1" value="2">
+                                            Payement
+                                            </label>
+                                            </div>
+                                        </div>
+                                        </div>
+
+                                        <!-- Number input-->
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label" for="piggybank-amount">Montant</label>  
+                                            <div class="col-md-4">
+                                                <input type="number" name="amount" min="0" value="0" step=".01"><span> €</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Multiple Radios -->
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label" for="piggybank">Tirelire</label>
+                                            <div class="col-md-4">
+                                                <div class="radio">
+                                                    <label for="piggybank-0">
+                                                        <input type="radio" name="piggybank" id="piggybank-0" value="1" checked="checked">
+                                                        Option one
+                                                    </label>
+                                                </div>
+                                                <div class="radio">
+                                                    <label for="piggybank-1">
+                                                        <input type="radio" name="piggybank" id="piggybank-1" value="2">
+                                                        Option two
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Date -->
+                                        <label for="movement-date">Date</label>
+                                        <input type="date" id="start" name="movement-date" value="' . date("Y-m-d") . '" min="1900-01-01" max="2100-01-01">
+                                            
+                                        <!-- Button -->
+                                        <div class="form-group">
+                                            <div class="col-md-4">
+                                                <input type="submit" value="Créer">
+                                            </div>
+                                        </div>
+                                        
+                                        </fieldset>
+                                        </form>';
+                break;
+
             default:
                 // Page 404
                 $this->pageContent = '  <p>Page 404</p>
-                                        <a href="?page=login">< Retour à la réalité</a>';
+                                        <a href="' . Router::createInstance()->getSiteURL() . '">< Retour à la réalité</a>';
         }
     }
 
-    /*------------------------------------*/
-    
+    ////////////////////////////////////////
     
     // getPageContent()
     
@@ -244,46 +388,37 @@ class WebPage
         return $this->pageContent;
     }
 
-    /*------------------------------------*/
-    
+    ////////////////////////////////////////
     
     // getMenu()
     
     // Renvois le contenu de la page
     public function getMenu() : string
     {
-        // TODO : Factoriser le code
-        $host  = $_SERVER['HTTP_HOST'];
-        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-
         // menu
         return '<nav>
                     <ul class="menu main">
                         <li>
-                            <a href="#">Vue globale</a>
+                            <a href="' . Router::createInstance()->getSiteURL() . '">Vue globale</a>
                         </li>
                         <li>
-                            <a href="#">Mon profil</a>
-                        </li>
-                        <li>
-                            <a href="http://' . $host . $uri . '/?page=deconnection">Déconnexion</a>
+                            <a href="' . Router::createInstance()->getSiteURL() . '?page=deconnection">Déconnexion</a>
                         </li>
                     </ul>
                 </nav>
                 <nav>
                     <ul class="menu sub">
                         <li>
-                            <a href="#">Gérer les tirelires</a>
+                            <a href="' . Router::createInstance()->getSiteURL() . '?page=piggybanks">Gérer les tirelires</a>
                         </li>
                         <li>
-                            <a href="#">Nouveau mouvement</a>
+                            <a href="' . Router::createInstance()->getSiteURL() . '?page=new-movement">Nouveau mouvement</a>
                         </li>
                     </ul>
                 </nav>';
     }
 
-    /*------------------------------------*/
-    
+    ////////////////////////////////////////
     
     // addAlertMessage()
     
@@ -293,7 +428,7 @@ class WebPage
         $this->alertMessages .= $message;
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
     
     // displayPage()
     
@@ -310,7 +445,7 @@ class WebPage
         // Si nous sommes en page d'accueil, on affiche le cochon et le menu
         $logo = ''; // string
         $menu = ''; // string
-        if ((self::$actualPageCode) === 1) {
+        if (isset($_SESSION['logged']) === true) {
             $logo = SITE_LOGO;
             $menu = $this->getMenu();
         }
@@ -334,7 +469,7 @@ class WebPage
                     </html>';
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
     
     // __destruct()
 

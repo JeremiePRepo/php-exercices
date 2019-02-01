@@ -65,7 +65,7 @@ class DataBase
         }
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // connect()
 
@@ -81,7 +81,7 @@ class DataBase
         return self::$dataBaseInstance; 
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // checkEmail()
 
@@ -127,7 +127,7 @@ class DataBase
         return 0;
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // createNewUser()
 
@@ -167,7 +167,7 @@ class DataBase
         return true;
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getPassHashByEmail()
 
@@ -206,7 +206,7 @@ class DataBase
         return $response;
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getUserIdByEmail()
 
@@ -245,7 +245,7 @@ class DataBase
         return $response[0];
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getUserNameById()
 
@@ -285,18 +285,7 @@ class DataBase
         return $response[0];
     }
 
-    /*------------------------------------*/
-
-    // createNewPiggyBank()
-
-    // Crée une nouvelle tirelire
-    // INSERT INTO `bank_account` (`name`, `pk_user`) VALUES ('Compte courant', '9');
-    public function createNewPiggyBank(string $piggyBankName, int $userId) : string
-    {
-        // TODO
-    }
-
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getPiggyBanksByUserId()
 
@@ -334,5 +323,82 @@ class DataBase
         // La requete s'est bien effectuée
         $response = $PDOStatement->fetchAll(PDO::FETCH_NAMED);
         return $response;
+    }
+
+    ////////////////////////////////////////
+
+    // addPiggyBank()
+
+    // Crée une nouvelle tirelire
+    public function addPiggyBank(int $userId, string $name) : bool
+    {
+        try
+        {
+            // INSERT INTO `bank_account` (`name`, `pk_user`) VALUES ('Compte courant', '1');
+            $PDOStatement = $this->connectionPDO->prepare(  'INSERT INTO ' . DB_BANK_TABLE . ' (' . DB_BANK_NAME_FIELD . ', ' . DB_BANK_PK_USER_FIELD . ') VALUES (:name, :userId)');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            return false;
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            return false;
+        }
+        if (($PDOStatement->bindValue(':name',   $name,   PDO::PARAM_STR) === false) OR
+            ($PDOStatement->bindValue(':userId', $userId, PDO::PARAM_INT) === false)) 
+        {
+            // Erreur pendant le bindValue
+            return false;
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution, pour débugger :
+            // var_dump($PDOStatement->errorInfo ());
+            return false;
+        }
+        // La requete s'est bien effectuée
+        $PDOStatement->fetch(PDO::FETCH_NAMED);
+        return true;
+    }
+
+    ////////////////////////////////////////
+
+    // deletePiggyBank()
+
+    // Supprime une tirelire, retourne true si OK
+    public function deletePiggyBank(int $piggyBankId) : bool
+    {
+        try
+        {
+            // DELETE FROM `bank_account` WHERE `bank_account`.`id` = 6
+            $PDOStatement = $this->connectionPDO->prepare(  'DELETE FROM ' . DB_BANK_TABLE . ' WHERE ' . DB_BANK_ID_FIELD . ' = :piggyBankId');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            return false;
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            return false;
+        }
+        if (($PDOStatement->bindValue(':piggyBankId',   $piggyBankId,   PDO::PARAM_STR) === false)) 
+        {
+            // Erreur pendant le bindValue
+            return false;
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution, pour débugger :
+            // var_dump($PDOStatement->errorInfo ());
+            return false;
+        }
+        // La requete s'est bien effectuée
+        $PDOStatement->fetch(PDO::FETCH_NAMED);
+        return true;
     }
 }

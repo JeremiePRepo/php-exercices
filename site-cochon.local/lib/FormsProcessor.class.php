@@ -64,6 +64,11 @@ class FormsProcessor
                 // Page inscription, on traite le formulaire signup
                 $this->infoMessage = $this->signUp();
                 break;
+
+            case 7:
+                // Ajout de tirelire
+                $this->infoMessage = $this->addPiggyBank();
+                break;
             
             default:
                 break;
@@ -71,7 +76,7 @@ class FormsProcessor
 
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getInfomessage()
 
@@ -81,7 +86,7 @@ class FormsProcessor
         return $this->infoMessage;
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // getActualPageDatas()
 
@@ -91,7 +96,7 @@ class FormsProcessor
         return self::$actualPageDatas;
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // processAll()
 
@@ -113,7 +118,7 @@ class FormsProcessor
         return self::$formsProcessorInstance; 
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // loginForm()
 
@@ -184,14 +189,11 @@ class FormsProcessor
         $_SESSION['logged'] = true;
         $_SESSION['user-id'] = self::$dataBase->getUserIdByEmail($_POST['login-email']);
 
-        // TODO : Factoriser le code
         // On redirige vers la page principale
-        $host  = $_SERVER['HTTP_HOST'];
-        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-        header("Location: http://$host$uri/");
+        header("Location: " . Router::createInstance()->getSiteURL());
     }
 
-    /*------------------------------------*/
+    ////////////////////////////////////////
 
     // signUp()
 
@@ -265,10 +267,40 @@ class FormsProcessor
         $_SESSION['user-id'] = self::$dataBase->getUserIdByEmail($_POST['signup-email']);
         $_SESSION['logged'] = true;
 
-        // TODO : Factoriser le code
         // On redirige vers la page principale
-        $host  = $_SERVER['HTTP_HOST'];
-        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-        header("Location: http://$host$uri/");
+        header("Location: " . Router::createInstance()->getSiteURL());
+    }
+
+    ////////////////////////////////////////
+
+    // addPiggyBank()
+
+    // Ajoute une tirelire
+    public function addPiggyBank() : string
+    {
+        if( !filter_has_var(INPUT_POST , 'piggybank-name') OR
+            !filter_has_var(INPUT_POST , 'piggybank-start-amount'))
+        {
+            // Le formulaire n'a pas été rempli
+            return '';
+        }
+
+        $name   = $_POST['piggybank-name'];
+        $amount = $_POST['piggybank-start-amount'];
+        $userID = intval($_SESSION['user-id']);
+
+        // TODO : ajouter le montant initial
+
+        // Ajout en BDD
+        if((self::$dataBase->addPiggyBank($userID, $name)) === false)
+        {
+            return 'Problème lors de l\'enregistrement';
+        }
+
+        // On prépare un petit message de réussite
+        $_SESSION['info-message'] = 'Nouvelle tirelire créée';
+
+        // On redirige vers la liste des tirelires
+        header("Location: ?page=piggybanks");
     }
 }
