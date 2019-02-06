@@ -144,8 +144,27 @@ class WebPage
                 }
                 // Ici, l'utilisateur à déjà créé au moins une tirelire
 
-                /////////////////////////////////////////////////////////////
-                $this->pageContent = '<p>[WIP] Page Principale [WIP]</p>';
+                $this->pageContent = '<h3>Vue d\'ensemble</h3><br>';
+
+                $user = User::createInstance($userID);
+
+                // On envoie la liste des tirelires
+                $user->setPiggyBanks(DataBase::connect());
+
+                // On récupère la liste des tirelires
+                $piggyBanks = $user->getPiggyBanks();
+
+                $this->pageContent .= '<ul>';
+                foreach ($piggyBanks as $piggyBank) {
+                    $this->pageContent .= '<li>' . $piggyBank["name"];
+                    $movements = DataBase::connect()->getMovementsByUserId(intval($piggyBank["id"]));
+                    $this->pageContent .= '<ul>';
+                    foreach ($movements as $movement) {
+                        $this->pageContent .= '<li>' . $movement["amount"] . ' €</li>';
+                    }
+                    $this->pageContent .= '</ul>';
+                }
+                $this->pageContent .= '</ul>';
                 break;
             
             case 3:
@@ -304,7 +323,7 @@ class WebPage
 
                 $this->pageContent = '<h3>Nouveau mouvement</h3><br>';
 
-                $this->pageContent .= ' <form class="form-horizontal">
+                $this->pageContent .= ' <form method="post">
                                         <fieldset>
                                         
                                         <!-- Form Name -->

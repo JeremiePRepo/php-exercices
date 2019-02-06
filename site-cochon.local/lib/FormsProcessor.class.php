@@ -69,6 +69,12 @@ class FormsProcessor
                 // Ajout de tirelire
                 $this->infoMessage = $this->addPiggyBank();
                 break;
+
+            case 9:
+                // Ajout de tirelire
+                // TODO /////////////////////////////////////
+                //$this->infoMessage = $this->newMovement();
+                break;
             
             default:
                 break;
@@ -302,5 +308,17 @@ class FormsProcessor
 
         // On redirige vers la liste des tirelires
         header("Location: ?page=piggybanks");
+    }
+
+    ////////////////////////////////////////
+
+    // addMovement()
+
+    // Ajoute un mouvement
+    public function addMovement() : string
+    {
+        // TODO : Faire les contrôles
+        $amount = $_POST['amount'];
+        // TODO ///////////////////////////////////
     }
 }

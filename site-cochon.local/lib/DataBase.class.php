@@ -401,4 +401,41 @@ class DataBase
         $PDOStatement->fetch(PDO::FETCH_NAMED);
         return true;
     }
+
+    ////////////////////////////////////////
+
+    // getMovementsByUserId()
+
+    // Récupérer les tirelires en fonction d'un ID de tirelire
+    public function getMovementsByUserId(int $piggyBankId) : array
+    {
+        try
+        {
+            // SELECT `amount`, `date_movement` FROM `Movement` WHERE `fk_bank` = 1
+            $PDOStatement = $this->connectionPDO->prepare(  'SELECT `amount`, `date_movement` FROM `Movement` WHERE `fk_bank` = :piggyBankId');
+        }
+        catch (PDOException $error)
+        {
+            // Erreur lors de la préparation
+            // TODO : Renvoyer un message d'erreur
+        }
+        if($PDOStatement === false)
+        {
+            // Erreur
+            // TODO : Renvoyer un message d'erreur
+        }
+        if (($PDOStatement->bindValue(':piggyBankId', $piggyBankId, PDO::PARAM_INT) === false)) 
+        {
+            // Erreur pendant le bindValue
+            // TODO : Renvoyer un message d'erreur
+        } 
+        if($PDOStatement->execute() === false)
+        {
+            // Erreur d'exécution
+            // TODO : Renvoyer un message d'erreur
+        }
+        // La requete s'est bien effectuée
+        $response = $PDOStatement->fetchAll(PDO::FETCH_NAMED);
+        return $response;
+    }
 }
